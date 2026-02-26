@@ -1,17 +1,38 @@
 const capitals = [
 "TIRANA","ANDORA","BEČ","MINSK","BRISEL","SARAJEVO","SOFIJA","ZAGREB","NIKOZIJA","PRAG","KOPENHAGEN","TALIN","HELSINKI","PARIZ","BERLIN","ATINA","BUDIMPEŠTA","REJKJAVIK","DABLIN","RIM","RIGA","VADUZ","VILNUS","LUKSEMBURG","VALETA","KIŠINJEV","MONAKO","PODGORICA","AMSTERDAM","SKOPLJE","OSLO","VARŠAVA","LISABON","BUKUREŠT","BEOGRAD","BRATISLAVA","LJUBLJANA","MADRID","STOKHOLM","BERN","ANKARA","KIJEV","LONDON","VATIKAN"];
 
-let chosenWord = capitals[Math.floor(Math.random() * capitals.length)];
-let lives = 6;
-let correctLetters = [];
+const alphabet = [
+"A","B","C","Č","Ć","D","Đ","E","F","G","H","I","J","K","L","M",
+"N","O","P","Q","R","S","Š","T","U","V","W","X","Y","Z","Ž"
+];
+
+let chosenWord, lives, correctLetters;
 
 const wordDiv = document.getElementById("word");
 const livesDiv = document.getElementById("lives");
 const keyboardDiv = document.getElementById("keyboard");
 const messageDiv = document.getElementById("message");
+const restartBtn = document.getElementById("restartBtn");
 
 const canvas = document.getElementById("hangmanCanvas");
 const ctx = canvas.getContext("2d");
+
+function initGame() {
+    chosenWord = capitals[Math.floor(Math.random() * capitals.length)];
+    lives = 6;
+    correctLetters = [];
+
+    messageDiv.innerText = "";
+    livesDiv.innerText = "Životi: 6";
+    restartBtn.style.display = "none";
+
+    keyboardDiv.innerHTML = "";
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    drawBase();
+    displayWord();
+    createKeyboard();
+}
 
 function drawBase() {
     ctx.lineWidth = 3;
@@ -80,13 +101,12 @@ function displayWord() {
 }
 
 function createKeyboard() {
-    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    for (let letter of alphabet) {
+    alphabet.forEach(letter => {
         const button = document.createElement("button");
         button.innerText = letter;
         button.onclick = () => handleGuess(letter, button);
         keyboardDiv.appendChild(button);
-    }
+    });
 }
 
 function handleGuess(letter, button) {
@@ -106,28 +126,28 @@ function handleGuess(letter, button) {
 
 function checkGameOver() {
     let won = true;
+
     for (let letter of chosenWord) {
         if (letter !== " " && !correctLetters.includes(letter)) {
             won = false;
         }
     }
 
-    if (won) {
-        messageDiv.innerText = "POBJEDILI STE! Riječ je bila " + chosenWord;
-        disableAllButtons();
-    }
-
-    if (lives === 0) {
-        messageDiv.innerText = "IZGUBILI STE! Riječ je bila " + chosenWord;
-        disableAllButtons();
-    }
+    if (won) endGame(true);
+    if (lives === 0) endGame(false);
 }
 
-function disableAllButtons() {
+function endGame(win) {
+    messageDiv.innerText = win
+        ? "POBJEDILI STE! 🎉 Riječ je bila " + chosenWord
+        : "IZGUBILI STE! Riječ je bila " + chosenWord;
+
+    restartBtn.style.display = "inline-block";
+
     const buttons = document.querySelectorAll("button");
     buttons.forEach(btn => btn.disabled = true);
 }
 
-drawBase();
-displayWord();
-createKeyboard();
+restartBtn.onclick = initGame;
+
+initGame();
